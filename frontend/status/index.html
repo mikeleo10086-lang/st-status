@@ -1,7 +1,108 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        .st-card {
+            background: linear-gradient(135deg, #1f1c2c, #928dab);
+            border: 1px solid #5d4e75;
+            border-radius: 12px;
+            padding: 15px;
+            color: #fff;
+            font-family: sans-serif;
+            margin: 10px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        .st-header {
+            font-size: 16px;
+            font-weight: bold;
+            color: #e0c3fc;
+            border-bottom: 1px solid #5d4e75;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .st-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        .st-label { color: #b8b8b8; }
+        .st-value { font-weight: bold; color: #fff; }
+        .st-bar-bg {
+            width: 100%; height: 6px; background: #333;
+            border-radius: 3px; margin-top: 4px; overflow: hidden;
+        }
+        .st-bar-hp { height: 100%; background: #ff4b2b; width: 0%; transition: width 0.3s; }
+        .st-bar-mp { height: 100%; background: #00c6ff; width: 0%; transition: width 0.3s; }
+    </style>
+</head>
 <body>
-  <h1>状态栏测试成功！</h1>
-  <p>我的 GitHub 用户名是 mikeleo10086-lang</p>
+    <div class="st-card">
+        <div class="st-header">
+            <span id="st-loc">📍 加载中...</span>
+            <span id="st-time">🕒 加载中...</span>
+        </div>
+        
+        <div class="st-row">
+            <span class="st-label">血气</span>
+            <span class="st-value"><span id="st-hp-text">0</span> / 100</span>
+        </div>
+        <div class="st-bar-bg"><div class="st-bar-hp" id="st-hp-bar"></div></div>
+
+        <div class="st-row" style="margin-top: 10px;">
+            <span class="st-label">精力</span>
+            <span class="st-value"><span id="st-mp-text">0</span> / 100</span>
+        </div>
+        <div class="st-bar-bg"><div class="st-bar-mp" id="st-mp-bar"></div></div>
+
+        <div class="st-row" style="margin-top: 12px;">
+            <span class="st-label">贝币</span>
+            <span class="st-value" id="st-money">0</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            setTimeout(() => {
+                try {
+                    // 读取角色变量
+                    let vars = {};
+                    if (typeof getVariables === 'function') {
+                        vars = getVariables({ type: 'character' });
+                    } else if (window.parent && typeof window.parent.getVariables === 'function') {
+                        vars = window.parent.getVariables({ type: 'character' });
+                    }
+
+                    // 如果变量还没生成，给个兜底，防止报错
+                    vars.世界 = vars.世界 || { 位置: '未知', 时间: '未知' };
+                    vars.天命 = vars.天命 || { 血气: 100, 精力: 50 };
+                    vars.背包 = vars.背包 || { 贝币: 0 };
+
+                    // 更新顶部
+                    document.getElementById('st-loc').innerText = "📍 " + vars.世界.位置;
+                    document.getElementById('st-time').innerText = "🕒 " + vars.世界.日期 + " " + vars.世界.时间;
+
+                    // 更新血气 (按100最大值计算百分比)
+                    let hp = vars.天命.血气;
+                    document.getElementById('st-hp-text').innerText = hp;
+                    document.getElementById('st-hp-bar').style.width = Math.min(Math.max(hp, 0), 100) + '%';
+
+                    // 更新精力 (按100最大值计算)
+                    let mp = vars.天命.精力;
+                    document.getElementById('st-mp-text').innerText = mp;
+                    document.getElementById('st-mp-bar').style.width = Math.min(Math.max(mp, 0), 100) + '%';
+
+                    // 更新货币
+                    document.getElementById('st-money').innerText = vars.背包.贝币;
+
+                } catch (e) {
+                    console.error("状态栏渲染失败：", e);
+                }
+            }, 200); // 延迟200毫秒确保变量加载
+        })();
+    </script>
 </body>
 </html>
